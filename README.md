@@ -89,3 +89,4 @@
 https://zzsza.github.io/data/2018/02/17/datascience-interivew-questions/
 
 
+https://m.blog.naver.com/mykepzzang/220853827288
