@@ -1,4 +1,3 @@
-# Practical_Statistics
 - 통계학 쉽게 한줄정리 ~
 
 ### Chapter 1. 탐색적 데이터 분석
@@ -110,6 +109,21 @@
 
 
 https://zzsza.github.io/data/2018/02/17/datascience-interivew-questions/
-
-
 https://m.blog.naver.com/mykepzzang/220853827288
+
+면접 질의
+1.통계
+1)중심극한정리(central limit theorem)는 무엇이며 왜 중요합니까?
+2)샘플링이란 무엇입니까? 얼마나 많은 샘플링 방법을 알고 있습니까?
+3)Type I과 Type II 에의 차이점은 무엇입니까?
+4)선형 회귀 분석이란 무엇입니까? P-value, coefficient, R-Squared value란 무엇을 의미합니까? 이 구성 요소 각각의 의미는 무엇입니까?
+5)선형 회귀에 필요한 가정은 무엇입니까? 
+6)통계적 상호 작용(statistical interaction)이란 무엇입니까?
+7)선택 편향(selection bias)이란 무엇입니까?
+8)가우스 분포가 아닌 데이터 세트의 예는 무엇입니까?
+9)이항 확률 공식(Binomial Probability Formula)은 무엇입니까?
+
+
+
+
+https://m.cafe.daum.net/statsas/OG7f/57
