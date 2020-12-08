@@ -1,0 +1,139 @@
+---
+title: "DATE format handling"
+output: html_document
+---
+
+## 기초 날짜 데이터 형식 
+```{r}
+
+as.Date("2011-06-04 13:30:50")    # 시간 정보는 포함하지 못함 
+as.POSIXct("2011-06-04 13:30:50") # 시간 정보포 포함할 수 있으나, 
+as.POSIXct("2011-06-04 13")       # 이런식으로 써주면 인식을 못함
+
+```
+기본적으로는 as.Date  함수있지만 다루기가 힘들다
+많은 기능이 지원되는 함수가 as.POSIct 이지만, 한계점이 있고 다루기가 힘들다
+
+## lubridate 패키지로 날짜형식 다루기 
+```{r}
+library(lubridate)
+ymd("2011/06/04") # y(year), m(month), d(day)
+ymd("2011-06-04")
+ymd("20110604")
+ymd("110604")
+ymd("11.06.04")
+ymd("11,06,04")
+ymd("11_06.04") 
+ymd("2011  06  04") 
+ymd("2011!?06??!04") 
+ymd("2011 =06??04") 
+ymd("11 No 06 way 04") 
+ymd_hms("2011-06-04 13:30:50") # h(hours), m(minuts), s(second)
+ymd_h("2011-06-04 13")
+
+### 부분 추출하기 ### 
+mydate = ymd_hms("2011-06-04 13:30:50")
+year(mydate)
+month(mydate)
+month(mydate, label = T) # 월, 요일의 명칭을 factor 형으로 반환
+day(mydate)
+wday(mydate)
+wday(mydate, label = T) # 월, 요일의 명칭을 factor 형으로 반환
+yday(mydate)
+hour(mydate)
+minute(mydate)
+second(mydate)
+
+### 정보 수정 ###
+hour(mydate) = 10
+mydate
+
+### 날짜 계산 ###
+ymd("2016-01-30") + days(2)
+ymd("2016-01-30") - days(1:30)
+ymd("2016-01-30")
+# days 말고도 seconds(), minutes(), hours(), weeks(), years(), milliseconds(), microseconds(), nanoseconds(), picoseconds() 사용가능 
+ymd("2013-01-31") + months(0:11) 
+# 월 중에 31일이 존재하지 않는 월이 어디인지를 알 수 있음
+
+### lubridate + dplyr ###
+library(dplyr)
+data(lakers)
+lakers = lakers %>% tbl_df  # tbl_df : tibble dataframe 칼럼명 아래 자료형 표현
+lakers = lakers %>% mutate(date = paste(date, time) %>% ymd_hm ) %>% 
+                    rename(time_index = date) %>% select(-time)
+lakers %>% group_by(month(time_index)) %>% 
+           summarize(mean_x = mean(x, na.rm = T),
+                     mean_y = mean(y, na.rm = T))
+lakers %>% group_by(year(time_index)) %>% 
+           summarize(mean_x = mean(x, na.rm = T),
+                     mean_y = mean(y, na.rm = T))
+
+### 조건에 맞는 날짜 데이터만 추출 ###
+lakers %>% filter(time_index <= ymd_hms("2008-10-28 12:00:00")) # 2008-10-28 12:00:00 이전고르기
+lakers %>% filter(time_index >= ymd_hms("2008-10-28 12:00:00"),
+                  time_index <= ymd_hms("2009-03-09 00:33:00"))
+# 2008-10-28 12:00:00 ~ 2009-03-09 00:33:00 
+inter = interval(ymd_hms("2008-10-28 12:00:00"), ymd_hms("2009-03-09 00:33:00"))
+# inter = ymd_hms("2008-10-28 12:00:00") %--% ymd_hms("2009-03-09 00:33:00")
+# interval 함수 대신 %--% 이용해도 됨 ~ 라는 의미  
+lakers %>% filter(time_index %within% inter)
+# %within% 연산자 이용하면 더 간편하게 추출 가능 
+
+### 기타 함수 ###
+Sys.time() 
+now() # 현재 시간 , Sys.time 와 같은 기능 
+now("America/New_York")
+now("UTC")
+am(now()) # 오전 
+pm(now()) # 오후 
+
+### 시간 올림,반올림 ###
+round_date(mydate, "hour")
+round_date(mydate, "day")
+floor_date(mydate, "hour") # 내림 
+floor_date(mydate, "day")
+ceiling_date(mydate, "hour") # 올림 
+ceiling_date(mydate, "day")
+
+```
+
+
+proc iml
+a = 1
+
+## 데이터 읽기 
+```{r}
+
+### csv 파일읽기 ###
+myurl = "http://www.jaredlander.com/data/TomatoFirst.csv"
+tomato = read.table(file = myurl, header= TRUE, sep = ',')
+
+library(readr) # 이 패키지에 있는 모든 함수는 tibble로 반환 
+tomato2 = read_delim(file = myurl, delim = ',')
+# read_delim 은 stringsAsFactors = FALSE가 디폴트 
+
+library(data.table)
+tomato3 = fread(input = myurl, sep=',', header = TRUE)
+# data.table 객체를 반환
+
+### excel 파일읽기 ### 
+library(readxl)
+tomato_excel = read_excel("C:/Users/jeeyeon/Desktop/data/interaction.xlsx")
+tomato_excel # tibble 형태로 반환 
+
+
+```
+
+stringsAsFactors = FALSE (디폴트는 TRUE) : 문자값을 갖는 열들이 팩터로 변환되는 것을 방지, 속도에서 큰 차이있음
+
+
+
+```{r}
+
+
+
+```
+
+
+
