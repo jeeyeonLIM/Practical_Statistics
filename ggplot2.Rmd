@@ -1,0 +1,174 @@
+---
+title: "ggplot"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(scales)
+
+```
+
+geom이나 stat을 추가할 때 자동적으로 상속
+추가되는 geom / stat에서 반영되는 요소들은 상속되지 않음 
+
+
+```{r}
+head(diamonds, n = 10)
+head(mpg, n = 10)
+
+```
+
+# x(numeric) vs y(numeric), x(factor) vs y(numeric)
+
+### ◆ 점그래프 geom_point
+
+```{r}
+
+ggplot(diamonds, aes(x = carat, y = price, colour = clarity)) + geom_point() + geom_smooth()
+# ggplot 안에서 colour 옵션 : geom_point, geom_smooth 에 상속됨 
+ggplot(diamonds, aes(x = carat, y = price)) + geom_point(aes(colour = clarity)) + geom_smooth()
+# geom_point 안에만 colour 옵션 :point 에만 색 구분이 가능 
+ggplot(diamonds, aes(x = carat, y = price, colour = clarity)) + geom_point(colour = "darkblue")
+ggplot(diamonds, aes(x = carat, y = price)) + geom_point(aes(color = color)) + facet_wrap(~color)
+
+ggplot(data = mpg, aes(displ, hwy)) + geom_point() + geom_smooth()
+ggplot(data = mpg, aes(displ, hwy)) + 
+  geom_point(colour = "red",           # 점들의 색 지정
+             alpha = 0.3,              # 투명도 조절
+             position = "jitter") +    # x,y값에 난수를 더해서 점이 겹치지 않도록 
+  geom_smooth(method= "lm",            # 회귀선을 직선으로 지정
+              linetype = 2,            # 선 모양 변경
+              se = FALSE)              # 신뢰구간 표시하지 말아라 
+
+ggplot(data = mpg, aes(displ, hwy)) + geom_jitter() + geom_smooth()  # geom_point(position="jitter")와 같다
+  
+
+
+ggplot(mpg, aes(displ, hwy)) + geom_point() + facet_wrap(manufacturer~model)
+ggplot(mpg, aes(displ, hwy)) + geom_point() + facet_wrap(~manufacturer+model)
+# facet_wrap() : 하위 그래프들이 수평으로 나열된다
+# facet_grid() : 수직과 수평으로 각각 다른 변수를 지정
+
+
+```
+
+### ◆  선그래프 geom_line 
+```{r}
+
+ggplot(economics, aes(x = date, y = pop)) + geom_line()
+
+mydata = economics %>% mutate(year = year(date), month = month(date,label = TRUE)) %>% filter(year >= 2000)
+
+ggplot(mydata, aes(x = month, y = pop)) + geom_line(aes(color = factor(year), group = year)) +
+  scale_color_discrete(name = "Year") + scale_y_continuous(labels = comma)
+  labs(title = "Population Growth", x = "Month", y = "Population") 
+
+
+
+```
+
+
+
+
+
+# x(factor) vs y(numeric) 
+
+### ◆  막대그래프 geom_bar 
+
+```{r}
+
+
+ggplot(diamonds, aes(x = price)) + geom_bar()
+ggplot(diamonds, aes(x = price)) + geom_bar(stat="bin",aes(y = ..count..)) + ylab("갯수")    # 각 bin 에 해당하는 관측값 갯수 
+ggplot(diamonds, aes(x = price)) + geom_bar(stat="bin",aes(y = ..density..)) + ylab("밀도")  # 각 bin 의 밀도 
+ggplot(diamonds, aes(x = price)) + geom_bar(stat="bin",aes(y = ..ncount..))   # count 와 같으나 [0,1] 로 scaling 
+ggplot(diamonds, aes(x = price)) + geom_bar(stat="bin",aes(y = ..ndensity..)) # density 와 같으나 [0,1] 로 scaling
+ggplot(diamonds, aes(x = price)) + geom_bar(stat="bin") + geom_vline(xintercept = 5000,color = 'red')  # 강조선 추가
+ggplot(diamonds, aes(x = price)) + geom_bar(aes(fill = cut), binwidth = 3000) 
+ggplot(diamonds, aes(x = price)) + geom_bar(aes(fill = cut), binwidth = 3000, position = "dodge") 
+ggplot(diamonds, aes(x = price)) + geom_bar(aes(fill = cut), binwidth = 3000, position = "fill")
+ggplot(diamonds, aes(x = price)) + geom_bar(binwidth = 3000) + facet_grid(. ~cut) 
+ggplot(diamonds, aes(x = price)) + geom_bar(binwidth = 3000) + facet_wrap(. ~cut, nrow = 3)
+
+
+
+g = ggplot(diamonds, aes(price))
+g + stat_bin(geom = "bar")
+g + stat_bin(geom = "area")
+g + stat_bin(aes(size = ..ndensity..), geom = "point")
+
+ggplot(mtcars, aes(x=factor(cyl))) + 
+  geom_bar(aes(fill = factor(cyl)))     # fill은 면적에 색을 채운다
+
+ggplot(mtcars, aes(x=factor(cyl))) + 
+  geom_bar(aes(colour = factor(cyl)), size = 2) # colour는 stroke색을 변경
+
+
+
+
+
+```
+
+### ◆ 히스토그램 geom_histogram 
+
+
+```{r}
+ggplot(diamonds) + geom_histogram(aes(x = carat))
+ggplot(diamonds) + geom_density(aes(x = carat), fill = "grey50")
+
+
+```
+
+### ◆  상자그림 geom_boxplot
+```{r}
+ggplot(diamonds, aes(x = cut, y = carat)) + geom_boxplot()
+
+```
+
+### ◆  바이올린 플롯 geom_violet
+```{r}
+ggplot(diamonds, aes(x = cut, y = carat)) + geom_point() + geom_violin()
+ggplot(diamonds, aes(x = cut, y = carat)) + geom_violin() + geom_point() 
+
+
+```
+
+
+# ◆ color 
+
+```{r}
+
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + geom_point(aes(colour = Species)) + 
+  scale_color_manual(values = c("#31a354", "#e34a33", "yellow"))
+# http://colorbrewer2.org
+RColorBrewer::display.brewer.all()
+
+```
+
+
+
+# ◆ limit
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + geom_point() + xlim(5,6)
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + geom_point() + scale_x_continuous(limits = c(5,6))
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) + geom_point() + coord_cartesian(xlim = c(5,6))
+# xlim, ylim, limits 를 사용하는 경우 해당 범위 내에 있지 않은 데이터는 삭제되는 현상을 coord_cartesian 옵션으로 해결 
+```
+
+
+## 참고사항
+a = c(1,1,0,1)
+b = c(2,1,0,1)
+ifelse(a == 1 & b ==1 , "Yes", "No")
+ifelse(a == 1 && b ==1 , "Yes", "No")
+& | 즉 연산자 하나만 썼을 경우에 양쪽 모두 검사함
+&& || 이렇게 두개씩 썼을 경우에 하나가 거짓이면 나머지 하나는 검사하지 않음
+
+
+
+
+
+
